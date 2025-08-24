@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tic Tac Toe</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #222;
+      color: #fff;
+    }
+
+    .screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .hidden { display: none; }
+
+    button {
+      margin: 10px;
+      padding: 15px 30px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 5px;
+      width: 55vmin;
+      height: 55vmin;
+      margin: 20px auto;
+    }
+
+    .cell {
+      background: #444;
+      font-size: 6vmin;
+      display: flex;
+      color: aqua;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      aspect-ratio: 1 / 1;
+    }
+  </style>
+</head>
+<body>
+  <!-- First Start Screen -->
+  <div id="firstScreen" class="screen">
+    <h1>Tic Tac Toe</h1>
+    <button onclick="showScreen('startScreen')">Start</button>
+  </div>
+
+  <!-- Mode Select Screen -->
+  <div id="startScreen" class="screen hidden">
+    <h1>Select Mode</h1>
+    <button onclick="startGame('pvp')">Player vs Player</button>
+    <button onclick="startGame('ai')">Player vs Computer</button>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="gameScreen" class="screen hidden">
+    <h2 id="statusText">Player X's Turn</h2>
+    <div id="board" class="board"></div>
+    <button onclick="goToMenu()">Main Menu</button>
+  </div>
+
+  <!-- Win Screen -->
+  <div id="winScreen" class="screen hidden">
+    <h1 id="winnerMessage"></h1>
+    <button onclick="restartGame()">Play Again</button>
+    <button onclick="goToMenu()">Main Menu</button>
+  </div>
+
+  <script>
+    let currentPlayer = "X";
+    let gameMode = "pvp";
+    let board = Array(9).fill("");
+
+    function showScreen(id) {
+      document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
+      document.getElementById(id).classList.remove("hidden");
+    }
+
+    function startGame(mode) {
+      gameMode = mode;
+      currentPlayer = "X";
+      board = Array(9).fill("");
+      renderBoard();
+      document.getElementById("statusText").innerText = "Player X's Turn";
+      showScreen("gameScreen");
+    }
+
+    function renderBoard() {
+      const boardDiv = document.getElementById("board");
+      boardDiv.innerHTML = "";
+      board.forEach((cell, idx) => {
+        const div = document.createElement("div");
+        div.classList.add("cell");
+        div.innerText = cell;
+        div.onclick = () => makeMove(idx);
+        boardDiv.appendChild(div);
+      });
+    }
+
+    function makeMove(idx) {
+      if (board[idx] !== "") return;
+      board[idx] = currentPlayer;
+      renderBoard();
+
+      if (checkWinner()) {
+        document.getElementById("winnerMessage").innerText = `🎉 Congratulations! Player ${currentPlayer} Wins!`;
+        showScreen("winScreen");
+        return;
+      }
+
+      if (!board.includes("")) {
+        document.getElementById("winnerMessage").innerText = "It's a Draw!";
+        showScreen("winScreen");
+        return;
+      }
+
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      document.getElementById("statusText").innerText = `Player ${currentPlayer}'s Turn`;
+
+      if (gameMode === "ai" && currentPlayer === "O") {
+        aiMove();
+      }
+    }
+
+    function aiMove() {
+      let empty = board.map((v,i)=> v===""?i:null).filter(v=>v!==null);
+      let choice = empty[Math.floor(Math.random() * empty.length)];
+      makeMove(choice);
+    }
+
+    function checkWinner() {
+      const wins = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+      ];
+      return wins.some(([a,b,c]) => board[a] && board[a]===board[b] && board[a]===board[c]);
+    }
+
+    function restartGame() {
+      startGame(gameMode);
+    }
+
+    function goToMenu() {
+      showScreen("startScreen");
+    }
+  </script>
+</body>
+</html>
